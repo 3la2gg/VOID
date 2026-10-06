@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VOID</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<!-- Font Awesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          bgDark: '#080a10',
+          panelDark: '#111522',
+          panelBorder: '#1e2638',
+          goldAccent: '#f2b84b',
+          tealAccent: '#4fd1c5',
+          neonPurple: '#a855f7'
+        },
+        fontFamily: {
+          tajawal: ['Tajawal', 'sans-serif'],
+          rajdhani: ['Rajdhani', 'sans-serif']
+        }
+      }
+    }
+  }
+</script>
+
+<style>
+  :root {
+    --bg-dark: #080a10;
+    --panel-dark: rgba(17, 21, 34, 0.75);
+    --gold: #f2b84b;
+    --gold-glow: rgba(242, 184, 75, 0.35);
+    --teal: #4fd1c5;
+    --teal-glow: rgba(79, 209, 197, 0.35);
+    --border: rgba(30, 38, 56, 0.8);
+  }
+
+  body {
+    background-color: var(--bg-dark);
+    color: #e2e8f0;
+    font-family: 'Tajawal', sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* Custom Scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #080a10;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #1e2638;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--gold);
+  }
+
+  /* Glassmorphism */
+  .glass-panel {
+    background: rgba(17, 21, 34, 0.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border);
+  }
+
+  .glass-modal {
+    background: rgba(13, 16, 26, 0.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(242, 184, 75, 0.2);
+  }
+
+  /* Glow Effects */
+  .glow-gold {
+    box-shadow: 0 0 20px var(--gold-glow);
+  }
+  .glow-teal {
+    box-shadow: 0 0 20px var(--teal-glow);
+  }
+  
+  .text-glow-gold {
+    text-shadow: 0 0 10px rgba(242, 184, 75, 0.5);
+  }
+  .text-glow-teal {
+    text-shadow: 0 0 10px rgba(79, 209, 197, 0.5);
+  }
+
+  /* Canvas Positioning */
+  #bg-canvas {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Card 3D Tilt Wrapper */
+  .tilt-card {
+    transform-style: preserve-3d;
+    transition: transform 0.1s ease-out, border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  /* Tab Active Indicator */
+  .tab-active-gold {
+    background: linear-gradient(135deg, #f2b84b 0%, #d99a26 100%);
+    color: #080a10 !important;
+    border-color: #f2b84b !important;
+    box-shadow: 0 4px 20px var(--gold-glow);
+  }
+
+  .tab-active-teal {
+    background: linear-gradient(135deg, #4fd1c5 0%, #2bb0a4 100%);
+    color: #080a10 !important;
+    border-color: #4fd1c5 !important;
+    box-shadow: 0 4px 20px var(--teal-glow);
+  }
+
+  /* Modal animation */
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.92) translateY(20px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .animate-modal {
+    animation: modalIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+</style>
+</head>
+<body class="relative selection:bg-goldAccent selection:text-black">
+
+<!-- Canvas Particles -->
+<canvas id="bg-canvas"></canvas>
+
+<div class="relative z-10 flex flex-col min-h-screen">
+  
+  <header class="sticky top-0 z-40 glass-panel border-b border-panelBorder/80 px-4 lg:px-8 py-3 transition-all duration-300">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3 cursor-pointer" onclick="resetFilters()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-goldAccent to-tealAccent p-[2px] glow-gold flex items-center justify-center">
+          <div class="w-full h-full bg-bgDark rounded-[10px] flex items-center justify-center">
+            <i class="fa-solid fa-cube text-goldAccent text-xl animate-pulse"></i>
+          </div>
+        </div>
+        <div>
+          <h1 class="font-rajdhani font-bold text-2xl tracking-wider text-white flex items-center gap-2">
+            VOID<span class="text-goldAccent text-glow-gold"></span>
+          </h1>
+          <p class="text-[11px] text-gray-400 font-medium">most popular games platform and apps</p>
+        </div>
+      </div>
+
+      <!-- Live Search Bar -->
+      <div class="relative w-full md:w-96">
+        <div class="relative flex items-center">
+          <i class="fa-solid fa-magnifying-glass absolute right-3.5 text-gray-400 text-sm"></i>
+          <input 
+            type="text" 
+            id="search-input" 
+            placeholder="Search for games, apps, or tags (e.g. BO3, Adobe)..." 
+            class="w-full pl-10 pr-10 py-2.5 bg-panelDark/80 border border-panelBorder rounded-xl text-sm text-gray-200 placeholder-gray-500 focus:outline-none focus:border-goldAccent/80 focus:ring-1 focus:ring-goldAccent transition-all"
+            oninput="handleSearchInput(this.value)"
+          >
+          <button 
+            id="clear-search-btn" 
+            class="hidden absolute left-3 text-gray-400 hover:text-white transition-colors"
+            onclick="clearSearch()"
+          >
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Platform Actions / Live Stats Badge -->
+      <div class="hidden lg:flex items-center gap-3">
+        <div class="px-3 py-1.5 rounded-lg bg-panelDark border border-panelBorder flex items-center gap-2 text-xs text-gray-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+          <span>السيرفر: <strong class="text-tealAccent">active</strong></span>
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <section class="max-w-7xl mx-auto w-full px-4 pt-8 pb-4">
+    <!-- Hero Banner -->
+    <div class="relative rounded-2xl glass-panel p-6 md:p-8 overflow-hidden border border-panelBorder mb-6">
+      <div class="absolute -right-10 -bottom-10 w-60 h-60 bg-goldAccent/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-10 -top-10 w-60 h-60 bg-tealAccent/10 rounded-full blur-3xl pointer-events-none"></div>
+      
+      <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 text-center md:text-right">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-goldAccent/10 text-goldAccent border border-goldAccent/20">
+            <i class="fa-solid fa-bolt"></i> روابط دائمة ومباشرة 100%
+          </span>
+          <h2 class="text-2xl md:text-4xl font-extrabold text-white">تحميل أسرع. ألعاب وبرامج بدون إعلانات.</h2>
+          <p class="text-sm md:text-base text-gray-400 max-w-xl">
+            دليل D.E.E.P-BOX الرقمي للتحميل المباشر من MediaFire مع استئناف التحميل ودعم كافة الأجهزة.
+          </p>
+        </div>
+
+        <!-- Animated Stats -->
+        <div class="grid grid-cols-3 gap-3 md:gap-4 w-full md:w-auto">
+          <div class="bg-panelDark/80 p-3 md:p-4 rounded-xl border border-panelBorder text-center">
+            <div id="stat-total-items" class="font-rajdhani font-bold text-xl md:text-2xl text-goldAccent">0</div>
+            <div class="text-[11px] text-gray-400">العناصر المتاحة</div>
+          </div>
+          <div class="bg-panelDark/80 p-3 md:p-4 rounded-xl border border-panelBorder text-center">
+            <div id="stat-total-downloads" class="font-rajdhani font-bold text-xl md:text-2xl text-tealAccent">0</div>
+            <div class="text-[11px] text-gray-400">إجمالي التحميلات</div>
+          </div>
+          <div class="bg-panelDark/80 p-3 md:p-4 rounded-xl border border-panelBorder text-center">
+            <div id="stat-active-users" class="font-rajdhani font-bold text-xl md:text-2xl text-purple-400">0</div>
+            <div class="text-[11px] text-gray-400">زائر نشط</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+      <!-- Tabs -->
+      <nav class="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none">
+        <button 
+          class="tab-btn tab-active-gold whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-sm border border-panelBorder transition-all flex items-center gap-2"
+          data-category="pc-games" 
+          data-kind="game" 
+          onclick="switchTab(this)"
+        >
+          <i class="fa-solid fa-gamepad"></i> ألعاب PC
+        </button>
+        <button 
+          class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-sm text-gray-400 bg-panelDark/60 border border-panelBorder hover:text-white transition-all flex items-center gap-2"
+          data-category="mobile-games" 
+          data-kind="game" 
+          onclick="switchTab(this)"
+        >
+          <i class="fa-solid fa-mobile-screen-button"></i> ألعاب جوال
+        </button>
+        <button 
+          class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-sm text-gray-400 bg-panelDark/60 border border-panelBorder hover:text-white transition-all flex items-center gap-2"
+          data-category="pc-apps" 
+          data-kind="app" 
+          onclick="switchTab(this)"
+        >
+          <i class="fa-solid fa-laptop-code"></i> برامج PC
+        </button>
+        <button 
+          class="tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-sm text-gray-400 bg-panelDark/60 border border-panelBorder hover:text-white transition-all flex items-center gap-2"
+          data-category="mobile-apps" 
+          data-kind="app" 
+          onclick="switchTab(this)"
+        >
+          <i class="fa-solid fa-shapes"></i> تطبيقات جوال
+        </button>
+      </nav>
+
+      <!-- Sorting Control -->
+      <div class="flex items-center gap-2 self-end lg:self-auto">
+        <span class="text-xs text-gray-400 whitespace-nowrap"><i class="fa-solid fa-sort ml-1"></i>الفرز حسب:</span>
+        <select 
+          id="sort-select" 
+          onchange="handleSortChange(this.value)" 
+          class="bg-panelDark border border-panelBorder rounded-xl px-3 py-2 text-xs text-gray-200 focus:outline-none focus:border-goldAccent"
+        >
+          <option value="featured">الأبرز / الموصى به</option>
+          <option value="popular">الأكثر شعبية (Likes)</option>
+          <option value="name">الاسم (أ - ي)</option>
+          <option value="size">الحجم</option>
+        </select>
+      </div>
+    </div>
+  </section>
+
+  <main class="max-w-7xl mx-auto w-full px-4 py-4 flex-1">
+    
+    <!-- Active Category Header -->
+    <div class="flex items-center justify-between mb-4 pb-2 border-b border-panelBorder/60">
+      <h3 id="current-category-title" class="font-bold text-lg text-white flex items-center gap-2">
+        <span id="category-dot" class="w-2.5 h-2.5 rounded-full bg-goldAccent"></span>
+        <span>ألعاب الكمبيوتر</span>
+      </h3>
+      <span id="items-count-badge" class="text-xs text-gray-400 font-rajdhani bg-panelDark px-2.5 py-1 rounded-md border border-panelBorder">
+        0 عنصر
+      </span>
+    </div>
+
+    <!-- Cards Grid Container -->
+    <div id="cards-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+      <!-- Cards dynamic load via JS -->
+    </div>
+
+    <!-- Empty State Message -->
+    <div id="empty-state" class="hidden my-12 text-center py-16 rounded-2xl glass-panel border border-panelBorder">
+      <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-panelDark flex items-center justify-center text-gray-500 text-2xl border border-panelBorder">
+        <i class="fa-solid fa-box-open"></i>
+      </div>
+      <h4 class="text-lg font-bold text-gray-200">لم يتم العثور على أي نتائج</h4>
+      <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">تأكد من كتابة اسم العنصر بشكل صحيح أو اختر قسماً آخر.</p>
+      <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-goldAccent/10 text-goldAccent hover:bg-goldAccent hover:text-black font-semibold text-xs rounded-xl border border-goldAccent/30 transition-all">
+        إعادة ضبط البحث
+      </button>
+    </div>
+  </main>
+
+  <div id="detail-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden opacity-0 transition-opacity duration-300">
+    <div class="glass-modal w-full max-w-2xl rounded-2xl overflow-hidden shadow-2xl relative animate-modal max-h-[90vh] flex flex-col">
+      
+      <!-- Modal Close Button -->
+      <button onclick="closeModal()" class="absolute top-4 left-4 z-20 w-9 h-9 rounded-full bg-black/60 hover:bg-red-500/80 text-white flex items-center justify-center transition-colors">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Modal Content Body -->
+      <div class="overflow-y-auto p-6 space-y-5">
+        
+        <!-- Header / Banner Cover -->
+        <div class="relative h-48 md:h-56 rounded-xl overflow-hidden bg-panelDark border border-panelBorder group">
+          <img id="modal-image" src="" alt="" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-bgDark via-transparent to-transparent"></div>
+          <div class="absolute bottom-3 right-3 flex items-center gap-2">
+            <span id="modal-platform" class="px-2.5 py-1 rounded-md text-xs font-bold bg-black/60 backdrop-blur border border-white/10 text-white"></span>
+            <span id="modal-size" class="px-2.5 py-1 rounded-md text-xs font-bold bg-goldAccent text-black"></span>
+          </div>
+        </div>
+
+        <!-- Title & Developer -->
+        <div>
+          <div class="flex items-center justify-between gap-2">
+            <h3 id="modal-title" class="text-2xl font-extrabold text-white"></h3>
+            <button id="modal-like-btn" onclick="" class="px-3 py-1.5 rounded-lg bg-panelDark border border-panelBorder hover:border-red-500/50 text-xs font-semibold text-gray-300 flex items-center gap-1.5 transition-colors">
+              <i class="fa-solid fa-heart text-red-500"></i>
+              <span id="modal-likes-count">0</span>
+            </button>
+          </div>
+          <p id="modal-developer" class="text-xs text-goldAccent font-medium mt-1"></p>
+        </div>
+
+        <!-- Description -->
+        <div>
+          <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">وصف العنصر</h4>
+          <p id="modal-desc" class="text-sm text-gray-300 leading-relaxed"></p>
+        </div>
+
+        <!-- Tags List -->
+        <div id="modal-tags-container" class="flex flex-wrap gap-1.5"></div>
+
+        <!-- System Requirements / Details Grid -->
+        <div class="bg-panelDark/60 p-4 rounded-xl border border-panelBorder space-y-2">
+          <h4 class="text-xs font-bold text-gray-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-microchip text-tealAccent"></i> متطلبات التشغيل / معلومات الملف
+          </h4>
+          <div id="modal-reqs" class="text-xs text-gray-400 leading-normal"></div>
+        </div>
+
+        <!-- Download & Direct Link Actions -->
+        <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
+          <a 
+            id="modal-download-link" 
+            href="#" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            onclick="trackDownload()"
+            class="w-full sm:flex-1 py-3 px-6 rounded-xl font-bold text-sm bg-gradient-to-r from-goldAccent to-yellow-500 text-black hover:opacity-95 shadow-lg shadow-goldAccent/20 flex items-center justify-center gap-2 transition-all"
+          >
+            <i class="fa-solid fa-download"></i> تحميل مباشر من MediaFire
+          </a>
+          
+          <button 
+            id="modal-copy-btn" 
+            onclick="" 
+            class="w-full sm:w-auto px-4 py-3 rounded-xl bg-panelDark border border-panelBorder hover:bg-panelBorder text-xs text-gray-200 font-semibold flex items-center justify-center gap-2 transition-colors"
+          >
+            <i class="fa-solid fa-copy"></i> نسخ الرابط
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Footer -->
+  <footer class="glass-panel border-t border-panelBorder mt-12 py-6 text-center">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-gray-500">
+      <div>© D.E.E.P-BOX Team. جميع الحقوق محفوظة.</div>
+      <div class="flex items-center gap-4">
+        <span><i class="fa-solid fa-shield-halved text-tealAccent ml-1"></i>روابط آمنة وخالية من الإعلانات</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+<script>
+/* ======================================================================
+   DATA STRUCTURE: Full Sample Items Catalog
+   ====================================================================== */
+const itemsCatalog = [
+  // PC Games
+  {
+    id: "bo3",
+    category: "pc-games",
+    title: "Call of Duty: Black Ops III",
+    desc: "لعبة التصويب الشهيرة مع طور اللعب الجماعي الكامل وخارطة الزومبي الأصلية. تشمل حزمة اللعبة النادرة المحدثة.",
+    size: "125 GB",
+    platform: "Windows 10/11",
+    developer: "Treyarch / Activision",
+    image: "https://upload.wikimedia.org/wikipedia/en/b/b1/Black_Ops_3.jpg?utm_source=en.wikipedia.org&utm_campaign=index&utm_content=original",
+    fallbackEmoji: "🎮",
+    link: "https://www.mediafire.com/file/lpnde4gjl7do3x8/bo3.rar",
+    tags: ["Shooter", "Zombies", "Multiplayer", "Action"],
+    reqs: "OS: Windows 10 64-Bit | CPU: Intel Core i3-530 | RAM: 8 GB | GPU: Nvidia GTX 470 1GB",
+    likes: 142,
+    downloads: 3890,
+    featured: true
+  },
+  {
+    id: "bo2",
+    category: "pc-games",
+    title: "Call of Duty: Black Ops II",
+    desc: "shooter game with multiplayer modes, and the original zombie experience.",
+    size: "16 GB",
+    platform: "Windows",
+    developer: "Treyarch",
+    image: "https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/aeefeb0d-c893-49e0-acdd-84b83ad202fe/dhcr4ni-af525363-5057-49b5-94e9-54848d0e6712.png?token=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1cm46YXBwOjdlMGQxODg5ODIyNjQzNzNhNWYwZDQxNWVhMGQyNmUwIiwiaXNzIjoidXJuOmFwcDo3ZTBkMTg4OTgyMjY0MzczYTVmMGQ0MTVlYTBkMjZlMCIsIm9iaiI6W1t7InBhdGgiOiIvZi9hZWVmZWIwZC1jODkzLTQ5ZTAtYWNkZC04NGI4M2FkMjAyZmUvZGhjcjRuaS1hZjUyNTM2My01MDU3LTQ5YjUtOTRlOS01NDg0OGQwZTY3MTIucG5nIn1dXSwiYXVkIjpbInVybjpzZXJ2aWNlOmZpbGUuZG93bmxvYWQiXX0.qn6onwPiAvmtyZnM4sEhir5TcZVFYGBQPibP43_KLW4",
+    fallbackEmoji: "💥",
+    link: "https://www.mediafire.com/file/lyf2slx059ovywk/bo2.rar",
+    tags: ["Action", "Classics", "Shooter"],
+    reqs: "OS: Windows 7/10 64-Bit | CPU: Intel Core 2 Duo E8200 | RAM: 4 GB | GPU: Nvidia GeForce 8800GT",
+    likes: 210,
+    downloads: 5120,
+    featured: true
+  },
+    {
+    id: "bo1",
+    category: "pc-games",
+    title: "Call of Duty: Black Ops",
+    desc: "The original Black Ops shooter game with multiplayer modes, and the original zombie experience.",
+    size: "450 MB",
+    platform: "Windows 7/8/10",
+    developer: "activision",
+    image: "https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/42700/capsule_616x353.jpg?t=1780962720",
+    fallbackEmoji: "💥",
+    link: "https://www.mediafire.com/file/3mmmovgb5dd2szk/bo.rar/file",
+    tags: ["Action", "Classics", "Shooter"],
+    reqs: "OS: Windows 7/10 64-Bit | CPU: Intel Core 2 Duo E8200 | RAM: 4 GB | GPU: Nvidia GeForce 8800GT",
+    likes: 180,
+    downloads: 4200,
+    featured: true
+  },
+  {
+    id: "undertale",
+    category: "pc-games",
+    title: "undertale",
+    desc: "story rpg game with unique combat system and memorable characters.",
+    size: "118mb",
+    platform: "all platforms",
+    developer: "Toby Fox",
+    image: "https://upload.wikimedia.org/wikipedia/commons/f/f1/Undertale_cover.jpg?utm_source=ar.wikipedia.org&utm_campaign=index&utm_content=original",
+    fallbackEmoji: "❤️",
+    link: "https://www.mediafire.com/file/s6zpj27hsi5mtr9/UNDERTALE.rar/file",
+    tags: ["story", "exploring", "Adventure"],
+    reqs: "any device",
+    likes: 315,
+    downloads: 8900,
+    featured: true
+  },
+  {
+    id: "how to fish",
+    category: "pc-games",
+    title: "how to fish",
+    desc: "online game that allows players to experience the joys of fishing in a virtual environment.",
+    size: "600mb",
+    platform: "Windows 10/11",
+    developer: "unknown",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSS99T2b3KMQqx8hhRtdmPQJ0oY8-hL7L-AANlwG8yNI2eufV0HBOdvzDE&s=10",
+    fallbackEmoji: "🎣",
+    link: "https://www.mediafire.com/file/w1dkq8j78sklwcr/How_to_Fish.rar/file",
+    tags: ["story", "fishing", "Multiplayer", "adventure"],
+    reqs: "OS: Windows 10 64-Bit | CPU: Intel Core i5-5257U / AMD Ryzen 3 1200 | RAM: 8 GB | GPU: Nvidia GTX 1050 / AMD RX 460 2GB",
+    likes: 142,
+    downloads: 3890,
+    featured: true
+  },
+
+  // Mobile Games
+
+
+  // PC Apps
+
+
+  // Mobile Apps
+
+];
+
+/* ======================================================================
+   STATE MANAGEMENT VARIABLES
+   ====================================================================== */
+let currentCategory = "pc-games";
+let currentKind = "game";
+let searchQuery = "";
+let currentSort = "featured";
+let likesStore = JSON.parse(localStorage.getItem('deepbox_likes') || '{}');
+
+/* ======================================================================
+   DOM ELEMENTS
+   ====================================================================== */
+const cardsGrid = document.getElementById('cards-grid');
+const emptyState = document.getElementById('empty-state');
+const currentCategoryTitle = document.getElementById('current-category-title');
+const categoryDot = document.getElementById('category-dot');
+const itemsCountBadge = document.getElementById('items-count-badge');
+const detailModal = document.getElementById('detail-modal');
+
+/* ======================================================================
+   INITIALIZATION
+   ====================================================================== */
+window.addEventListener('DOMContentLoaded', () => {
+  initParticleCanvas();
+  renderCards();
+  initStatsCounters();
+});
+
+/* ======================================================================
+   DYNAMIC ANIMATED CANVAS (CYBERPUNK CONSTELLATION MESH)
+   ====================================================================== */
+function initParticleCanvas() {
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let width, height;
+  let particles = [];
+  let mouse = { x: null, y: null, radius: 120 };
+
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  window.addEventListener('mousemove', (e) => {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+  });
+
+  class Particle {
+    constructor() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height;
+      this.vx = (Math.random() - 0.5) * 0.6;
+      this.vy = (Math.random() - 0.5) * 0.6;
+      this.radius = Math.random() * 1.8 + 1;
+      this.color = Math.random() > 0.5 ? '#f2b84b' : '#4fd1c5';
+    }
+
+    update() {
+      this.x += this.vx;
+      this.y += this.vy;
+
+      if (this.x < 0 || this.x > width) this.vx *= -1;
+      if (this.y < 0 || this.y > height) this.vy *= -1;
+
+      // Mouse interactivity
+      if (mouse.x && mouse.y) {
+        let dx = mouse.x - this.x;
+        let dy = mouse.y - this.y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < mouse.radius) {
+          let angle = Math.atan2(dy, dx);
+          this.x -= Math.cos(angle) * 1;
+          this.y -= Math.sin(angle) * 1;
+        }
+      }
+    }
+
+    draw() {
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+      ctx.fillStyle = this.color;
+      ctx.globalAlpha = 0.4;
+      ctx.fill();
+    }
+  }
+
+  // Create particles
+  const count = Math.min(Math.floor(window.innerWidth / 18), 70);
+  for (let i = 0; i < count; i++) {
+    particles.push(new Particle());
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+
+    // Draw connecting lines
+    for (let a = 0; a < particles.length; a++) {
+      for (let b = a; b < particles.length; b++) {
+        let dx = particles[a].x - particles[b].x;
+        let dy = particles[a].y - particles[b].y;
+        let dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 110) {
+          ctx.beginPath();
+          ctx.moveTo(particles[a].x, particles[a].y);
+          ctx.lineTo(particles[b].x, particles[b].y);
+          ctx.strokeStyle = '#1e2638';
+          ctx.globalAlpha = (1 - dist / 110) * 0.25;
+          ctx.stroke();
+        }
+      }
+    }
+
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+}
+
+/* ======================================================================
+   CARD RENDERING & FILTERING LOGIC
+   ====================================================================== */
+function renderCards() {
+  // Filter by category and search
+  let filtered = itemsCatalog.filter(item => {
+    const matchesCategory = item.category === currentCategory;
+    const query = searchQuery.toLowerCase().trim();
+    const matchesSearch = !query || 
+      item.title.toLowerCase().includes(query) ||
+      item.desc.toLowerCase().includes(query) ||
+      item.tags.some(t => t.toLowerCase().includes(query));
+    
+    return matchesCategory && matchesSearch;
+  });
+
+  // Sort Filter
+  filtered.sort((a, b) => {
+    let likesA = a.likes + (likesStore[a.id] ? 1 : 0);
+    let likesB = b.likes + (likesStore[b.id] ? 1 : 0);
+
+    if (currentSort === 'popular') return likesB - likesA;
+    if (currentSort === 'name') return a.title.localeCompare(b.title);
+    if (currentSort === 'size') return parseFloat(b.size) - parseFloat(a.size);
+    return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+  });
+
+  // Update Item Count Badge
+  itemsCountBadge.innerText = `${filtered.length} عنصر`;
+
+  if (filtered.length === 0) {
+    cardsGrid.innerHTML = '';
+    emptyState.classList.remove('hidden');
+    return;
+  }
+
+  emptyState.classList.add('hidden');
+  const isApp = currentKind === 'app';
+
+  cardsGrid.innerHTML = filtered.map(item => {
+    const isLiked = !!likesStore[item.id];
+    const totalLikes = item.likes + (isLiked ? 1 : 0);
+
+    return `
+      <div 
+        class="tilt-card card group bg-panelDark border border-panelBorder rounded-2xl overflow-hidden flex flex-col justify-between hover:border-goldAccent/50 transition-all duration-300 relative"
+        onmousemove="handleTilt(event, this)"
+        onmouseleave="resetTilt(this)"
+      >
+        <!-- Card Thumbnail -->
+        <div class="relative h-36 bg-slate-900 overflow-hidden cursor-pointer" onclick="openModal('${item.id}')">
+          <img 
+            src="${item.image}" 
+            alt="${item.title}" 
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+            onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'w-full h-full flex items-center justify-center text-3xl bg-panelDark border-b border-panelBorder\'>${item.fallbackEmoji}</div>'"
+          >
+          <div class="absolute inset-0 bg-gradient-to-t from-panelDark via-transparent to-transparent opacity-80"></div>
+          
+          <!-- Size Badge -->
+          <span class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-bold font-rajdhani bg-black/70 border border-white/10 text-goldAccent backdrop-blur">
+            ${item.size}
+          </span>
+
+          <!-- Category Indicator -->
+          <span class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/70 text-gray-300 border border-white/10 backdrop-blur">
+            ${item.platform}
+          </span>
+        </div>
+
+        <!-- Card Content Body -->
+        <div class="p-4 flex-1 flex flex-col justify-between space-y-3">
+          <div>
+            <h4 class="font-bold text-white text-base group-hover:text-goldAccent transition-colors cursor-pointer line-clamp-1" onclick="openModal('${item.id}')">
+              ${item.title}
+            </h4>
+            <p class="text-xs text-gray-400 mt-1 line-clamp-2 leading-relaxed">
+              ${item.desc}
+            </p>
+          </div>
+
+          <!-- Tags -->
+          <div class="flex flex-wrap gap-1">
+            ${item.tags.slice(0, 2).map(t => `<span class="text-[9px] px-1.5 py-0.5 rounded bg-panelBorder/60 text-gray-400 font-medium">#${t}</span>`).join('')}
+          </div>
+
+          <!-- Meta Footer & Action Buttons -->
+          <div class="pt-2 border-t border-panelBorder/60 flex items-center justify-between gap-2">
+            <!-- Like Button -->
+            <button 
+              onclick="toggleLike('${item.id}', event)" 
+              class="px-2.5 py-1 rounded-lg bg-panelBorder/40 hover:bg-panelBorder text-xs text-gray-300 flex items-center gap-1 transition-colors ${isLiked ? 'text-red-500' : ''}"
+            >
+              <i class="fa-solid fa-heart ${isLiked ? 'text-red-500' : 'text-gray-500'}"></i>
+              <span class="text-[11px] font-rajdhani font-semibold">${totalLikes}</span>
+            </button>
+
+            <!-- Download Button -->
+            <button 
+              onclick="openModal('${item.id}')"
+              class="px-3 py-1.5 rounded-xl text-xs font-bold font-tajawal transition-all flex items-center gap-1.5 ${isApp ? 'bg-tealAccent hover:bg-teal-400 text-black glow-teal' : 'bg-goldAccent hover:bg-yellow-400 text-black glow-gold'}"
+            >
+              <span>تحميل</span>
+              <i class="fa-solid fa-arrow-down-long text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* ======================================================================
+   CARD 3D TILT EFFECT
+   ====================================================================== */
+function handleTilt(e, card) {
+  const rect = card.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  
+  const centerX = rect.width / 2;
+  const centerY = rect.height / 2;
+  
+  const rotateX = ((y - centerY) / centerY) * -7;
+  const rotateY = ((x - centerX) / centerX) * 7;
+
+  card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(-4px)`;
+}
+
+function resetTilt(card) {
+  card.style.transform = `perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)`;
+}
+
+/* ======================================================================
+   SEARCH & FILTER EVENT HANDLERS
+   ====================================================================== */
+function handleSearchInput(value) {
+  searchQuery = value;
+  const clearBtn = document.getElementById('clear-search-btn');
+  if (value.trim()) {
+    clearBtn.classList.remove('hidden');
+  } else {
+    clearBtn.classList.add('hidden');
+  }
+  renderCards();
+}
+
+function clearSearch() {
+  const input = document.getElementById('search-input');
+  input.value = '';
+  searchQuery = '';
+  document.getElementById('clear-search-btn').classList.add('hidden');
+  renderCards();
+}
+
+function resetFilters() {
+  clearSearch();
+  currentSort = 'featured';
+  document.getElementById('sort-select').value = 'featured';
+  renderCards();
+}
+
+function handleSortChange(value) {
+  currentSort = value;
+  renderCards();
+}
+
+function switchTab(btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => {
+    b.className = "tab-btn whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-sm text-gray-400 bg-panelDark/60 border border-panelBorder hover:text-white transition-all flex items-center gap-2";
+  });
+
+  currentCategory = btn.dataset.category;
+  currentKind = btn.dataset.kind;
+
+  if (currentKind === 'app') {
+    btn.className = "tab-btn tab-active-teal whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-sm border border-panelBorder transition-all flex items-center gap-2";
+    categoryDot.className = "w-2.5 h-2.5 rounded-full bg-tealAccent glow-teal";
+  } else {
+    btn.className = "tab-btn tab-active-gold whitespace-nowrap px-4 py-2.5 rounded-xl font-bold text-sm border border-panelBorder transition-all flex items-center gap-2";
+    categoryDot.className = "w-2.5 h-2.5 rounded-full bg-goldAccent glow-gold";
+  }
+
+  // Set Section Title
+  const titlesMap = {
+    'pc-games': 'ألعاب الكمبيوتر (PC)',
+    'mobile-games': 'ألعاب الجوال (Mobile)',
+    'pc-apps': 'برامج الكمبيوتر (PC)',
+    'mobile-apps': 'تطبيق الجوال (Mobile)'
+  };
+  currentCategoryTitle.querySelector('span:last-child').innerText = titlesMap[currentCategory] || 'العناصر';
+
+  renderCards();
+}
+
+/* ======================================================================
+   LIKE & INTERACTION SYSTEM (localStorage)
+   ====================================================================== */
+function toggleLike(id, event) {
+  if (event) event.stopPropagation();
+  if (likesStore[id]) {
+    delete likesStore[id];
+    showToast('تم إزالة الإعجاب', 'info');
+  } else {
+    likesStore[id] = true;
+    showToast('تم إضافة الإعجاب!', 'success');
+  }
+  localStorage.setItem('deepbox_likes', JSON.stringify(likesStore));
+  renderCards();
+  
+  // If modal is open, refresh modal like count
+  const item = itemsCatalog.find(i => i.id === id);
+  if (item) {
+    const isLiked = !!likesStore[id];
+    document.getElementById('modal-likes-count').innerText = item.likes + (isLiked ? 1 : 0);
+  }
+}
+
+/* ======================================================================
+   MODAL / LIGHTBOX DETAILS WINDOW
+   ====================================================================== */
+function openModal(id) {
+  const item = itemsCatalog.find(i => i.id === id);
+  if (!item) return;
+
+  const isLiked = !!likesStore[item.id];
+
+  document.getElementById('modal-title').innerText = item.title;
+  document.getElementById('modal-developer').innerText = `المطور: ${item.developer}`;
+  document.getElementById('modal-desc').innerText = item.desc;
+  document.getElementById('modal-platform').innerText = item.platform;
+  document.getElementById('modal-size').innerText = item.size;
+  document.getElementById('modal-likes-count').innerText = item.likes + (isLiked ? 1 : 0);
+
+  const imageEl = document.getElementById('modal-image');
+  imageEl.src = item.image;
+  imageEl.onerror = () => { imageEl.src = 'https://placehold.co/600x350/111522/f2b84b?text=' + encodeURIComponent(item.title); };
+
+  document.getElementById('modal-tags-container').innerHTML = item.tags.map(t => 
+    `<span class="px-2 py-0.5 rounded-md bg-panelBorder text-xs text-gray-300">#${t}</span>`
+  ).join('');
+
+  document.getElementById('modal-reqs').innerText = item.reqs;
+  
+  const downloadBtn = document.getElementById('modal-download-link');
+  downloadBtn.href = item.link;
+
+  const copyBtn = document.getElementById('modal-copy-btn');
+  copyBtn.onclick = () => copyToClipboard(item.link);
+
+  const likeBtn = document.getElementById('modal-like-btn');
+  likeBtn.onclick = () => toggleLike(item.id);
+
+  detailModal.classList.remove('hidden');
+  setTimeout(() => detailModal.classList.remove('opacity-0'), 10);
+}
+
+function closeModal() {
+  detailModal.classList.add('opacity-0');
+  setTimeout(() => detailModal.classList.add('hidden'), 300);
+}
+
+// Close modal when clicking backdrop
+detailModal.addEventListener('click', (e) => {
+  if (e.target === detailModal) closeModal();
+});
+
+/* ======================================================================
+   STATS ANIMATED COUNTER
+   ====================================================================== */
+function initStatsCounters() {
+  const totalItems = itemsCatalog.length;
+  const totalDownloads = itemsCatalog.reduce((acc, curr) => acc + curr.downloads, 0);
+  const activeUsers = 1420;
+
+  animateCounter('stat-total-items', totalItems, 1000);
+  animateCounter('stat-total-downloads', totalDownloads, 1500);
+  animateCounter('stat-active-users', activeUsers, 1200);
+}
+
+function animateCounter(id, target, duration) {
+  const el = document.getElementById(id);
+  let start = 0;
+  let increment = target / (duration / 16);
+
+  function step() {
+    start += increment;
+    if (start >= target) {
+      el.innerText = target.toLocaleString('ar-EG');
+    } else {
+      el.innerText = Math.floor(start).toLocaleString('ar-EG');
+      requestAnimationFrame(step);
+    }
+  }
+  step();
+}
+
+function trackDownload() {
+  showToast('جار بَدْء التحميل المباشر...', 'success');
+}
+
+/* ======================================================================
+   CLIPBOARD & TOAST NOTIFICATIONS
+   ====================================================================== */
+function copyToClipboard(text) {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  document.body.appendChild(textarea);
+  textarea.select();
+  try {
+    document.execCommand('copy');
+    showToast('تم نسخ رابط التحميل لقطافظتك!', 'success');
+  } catch (err) {
+    showToast('تعذر نسخ الرابط تلقائياً', 'error');
+  }
+  document.body.removeChild(textarea);
+}
+
+function showToast(message, type = 'info') {
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+
+  const borderColors = {
+    success: 'border-emerald-500 text-emerald-400',
+    error: 'border-red-500 text-red-400',
+    info: 'border-goldAccent text-goldAccent'
+  };
+
+  toast.className = `pointer-events-auto px-4 py-3 rounded-xl bg-panelDark/90 border ${borderColors[type]} backdrop-blur-md shadow-xl text-xs font-bold flex items-center gap-2 transform translate-y-4 opacity-0 transition-all duration-300`;
+  toast.innerHTML = `
+    <i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-circle-info'}"></i>
+    <span>${message}</span>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.remove('translate-y-4', 'opacity-0');
+  }, 10);
+
+  setTimeout(() => {
+    toast.classList.add('opacity-0', 'translate-y-2');
+    setTimeout(() => toast.remove(), 300);
+  }, 3000);
+}
+</script>
+</body>
+</html>
